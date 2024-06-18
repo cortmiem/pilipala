@@ -121,19 +121,11 @@ jobs:
 
       - name: flutter build apk
         run: flutter build apk --release --split-per-abi
-        env:
-            KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-            KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-            KEY_PASSWORD: ${{ secrets.KEY_PASSWORD}}
 
       - name: flutter build apk
         run: |
           sed -i "s/version: .*/version: ${{ needs.update_version.outputs.new_version }}0/g" pubspec.yaml
           flutter build apk --release
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD}}
 
       - name: 重命名应用
         run: |
@@ -152,57 +144,12 @@ jobs:
           path: |
             build/app/outputs/flutter-apk/Pili-*.apk
 
-  iOS:
-    name: Build CI (iOS)
-    needs: update_version
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: 安装Flutter
-        if: steps.cache-flutter.outputs.cache-hit != 'true'
-        uses: subosito/flutter-action@v2.10.0
-        with:
-          cache: true
-          flutter-version: 3.16.5
-
-      - name: 更新版本号
-        id: version
-        run: |
-          # 更新pubspec.yaml文件中的版本号
-          sed -i "" "s/version: .*/version: ${{ needs.update_version.outputs.new_version }}/g" pubspec.yaml
-
-      - name: flutter build ipa
-        run: |
-          flutter build ios --release --no-codesign 
-          ln -sf ./build/ios/iphoneos Payload
-          zip -r9 app.ipa Payload/runner.app
-
-      - name: 重命名应用
-        run: |
-          version_name=$(yq e .version pubspec.yaml | cut -d "+" -f 1)
-          for file in app.ipa; do
-            new_file_name="build/Pili-${version_name}.ipa"
-            mv "$file" "$new_file_name"
-          done
-
-      - name: 上传
-        uses: actions/upload-artifact@v3
-        with:
-          if-no-files-found: error
-          name: Pilipala-CI
-          path: |
-            build/Pili-*.ipa
-
   upload:
     runs-on: ubuntu-latest
 
     needs:
       - update_version
       - android
-      - iOS
     steps:
 
       - uses: actions/download-artifact@v3
