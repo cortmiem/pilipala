@@ -120,12 +120,12 @@ jobs:
           sed -i "s/version: .*/version: ${{ needs.update_version.outputs.new_version }}/g" pubspec.yaml
 
       - name: flutter build apk
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --profile --split-per-abi
 
       - name: flutter build apk
         run: |
           sed -i "s/version: .*/version: ${{ needs.update_version.outputs.new_version }}0/g" pubspec.yaml
-          flutter build apk --release
+          flutter build apk --profile
 
       - name: 重命名应用
         run: |
