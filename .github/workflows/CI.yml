@@ -142,7 +142,7 @@ jobs:
         with:
           name: Pilipala-CI
           path: |
-            build/app/outputs/flutter-apk/Pili-*.apk
+            build/app/outputs/flutter-apk/*.apk
 
   upload:
     runs-on: ubuntu-latest
